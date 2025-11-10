@@ -3,1032 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clínica Veterinaria - Sistema de Gestión</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a237e 0%, #00695c 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: #FFFFFF;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #1a237e 0%, #00695c 100%);
-            color: #FFFFFF;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .connection-status {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .connection-status.connected {
-            background: #4CAF50;
-        }
-
-        .connection-status.disconnected {
-            background: #F44336;
-        }
-
-        .tabs {
-            display: flex;
-            background: #F5F5F5;
-            border-bottom: 2px solid #E0E0E0;
-            overflow-x: auto;
-        }
-
-        .tab-button {
-            flex: 1;
-            min-width: 120px;
-            padding: 15px 20px;
-            background: #F5F5F5;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            color: #666;
-            transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .tab-button:hover {
-            background: #EEEEEE;
-        }
-
-        .tab-button.active {
-            color: #00695c;
-            border-bottom-color: #00695c;
-            background: #FFFFFF;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .tab-content h2 {
-            color: #1a237e;
-            margin-bottom: 20px;
-            font-size: 24px;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-        }
-
-        .tab-content h3 {
-            color: #1a237e;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .form-row.full {
-            grid-template-columns: 1fr;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #1a237e;
-            font-size: 14px;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #DDD;
-            border-radius: 4px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: border-color 0.3s ease;
-            background: #FFFFFF;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #00695c;
-            box-shadow: 0 0 0 3px rgba(0, 105, 92, 0.1);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
-        }
-
-        button {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-primary {
-            background: #00695c;
-            color: #FFFFFF;
-            flex: 1;
-        }
-
-        .btn-primary:hover {
-            background: #004d40;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 105, 92, 0.3);
-        }
-
-        .btn-secondary {
-            background: #E0E0E0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #D0D0D0;
-        }
-
-        .btn-danger {
-            background: #D32F2F;
-            color: #FFFFFF;
-        }
-
-        .btn-danger:hover {
-            background: #B71C1C;
-        }
-
-        .table-container {
-            overflow-x: auto;
-            margin-top: 20px;
-            border: 1px solid #E0E0E0;
-            border-radius: 4px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #FFFFFF;
-        }
-
-        th {
-            background: #1a237e;
-            color: #FFFFFF;
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #E0E0E0;
-            font-size: 14px;
-        }
-
-        tr:hover {
-            background: #F5F5F5;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 12px;
-            border-radius: 3px;
-        }
-
-        .message {
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            display: none;
-            font-weight: 600;
-        }
-
-        .message.success {
-            background: #C8E6C9;
-            color: #1B5E20;
-            border-left: 4px solid #2E7D32;
-            display: block;
-        }
-
-        .message.error {
-            background: #FFCDD2;
-            color: #B71C1C;
-            border-left: 4px solid #D32F2F;
-            display: block;
-        }
-
-        .info-box {
-            background: #E3F2FD;
-            border-left: 4px solid #1a237e;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            font-size: 13px;
-            color: #1a237e;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
-            padding: 20px;
-            border-radius: 4px;
-            border-left: 4px solid #00695c;
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: 700;
-            color: #00695c;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .loading {
-            text-align: center;
-            color: #666;
-            padding: 20px;
-        }
-
-        .error-message {
-            background: #FFEBEE;
-            color: #C62828;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 10px 0;
-            border-left: 4px solid #F44336;
-        }
-
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .tab-button {
-                font-size: 12px;
-                padding: 12px 10px;
-                min-width: 100px;
-            }
-            
-            .content {
-                padding: 20px;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .stats {
-                grid-template-columns: 1fr;
-            }
-            
-            .header {
-                padding: 20px;
-            }
-            
-            .tabs {
-                flex-wrap: wrap;
-            }
-            
-            .tab-button {
-                flex: 1 0 50%;
-            }
-        }
-    </style>
+    <title>Sistema de Gestión de Clínica Veterinaria</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🏥 Clínica Veterinaria "Mascotas Felices"</h1>
-            <p>Sistema de Gestión Integral - Datos almacenados localmente</p>
-            <div class="connection-status connected" id="statusConexion">
-                🟢 Sistema funcionando con almacenamiento local
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">🏥</div>
+                <div class="sidebar-title">Clínica Vet</div>
             </div>
-        </div>
-        
-        <div class="tabs">
-            <button class="tab-button active" onclick="switchTab('dashboard', event)">📊 Dashboard</button>
-            <button class="tab-button" onclick="switchTab('duenos', event)">👥 Dueños</button>
-            <button class="tab-button" onclick="switchTab('mascotas', event)">🐾 Mascotas</button>
-            <button class="tab-button" onclick="switchTab('veterinarios', event)">👨‍⚕️ Veterinarios</button>
-            <button class="tab-button" onclick="switchTab('consultas', event)">📋 Consultas</button>
-            <button class="tab-button" onclick="switchTab('vacunas', event)">💉 Vacunas</button>
-        </div>
-        
-        <div class="content">
-            <!-- DASHBOARD -->
-            <div id="dashboard" class="tab-content active">
-                <h2>📊 Panel de Control</h2>
-                
-                <div class="stats">
-                    <div class="stat-card">
-                        <div class="stat-number" id="countDuenos">0</div>
-                        <div class="stat-label">Dueños Registrados</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="countMascotas">0</div>
-                        <div class="stat-label">Mascotas Registradas</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="countVeterinarios">0</div>
-                        <div class="stat-label">Veterinarios</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="countConsultas">0</div>
-                        <div class="stat-label">Consultas Realizadas</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="showPage('duenos')">
+                        <span class="nav-icon">👥</span>
+                        Gestión de Dueños
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showPage('veterinarios')">
+                        <span class="nav-icon">👨‍⚕️</span>
+                        Gestión de Veterinarios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showPage('mascotas')">
+                        <span class="nav-icon">🐾</span>
+                        Gestión de Mascotas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showPage('consultas')">
+                        <span class="nav-icon">📋</span>
+                        Gestión de Consultas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showPage('vacunas')">
+                        <span class="nav-icon">💉</span>
+                        Gestión de Vacunas
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Gestión de Dueños -->
+            <div id="duenos-page" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">Gestión de Dueños</h1>
+                    <button class="btn btn-primary" onclick="openModal('duenos')">
+                        ➕ Agregar Dueño
+                    </button>
+                </div>
+
+                <div id="duenos-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Cargando dueños...</p>
                     </div>
                 </div>
-                
-                <div class="info-box">
-                    <strong>ℹ️ Información:</strong> Todos los datos se almacenan localmente en tu navegador. Los datos persisten incluso si cierras la página.
-                </div>
-                
-                <h3>Últimas Mascotas Registradas</h3>
-                <div class="table-container">
-                    <table id="tablaMascotasRecientes">
-                        <thead>
-                            <tr>
-                                <th>Mascota</th>
-                                <th>Especie</th>
-                                <th>Raza</th>
-                                <th>Dueño</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="4" style="text-align: center; color: #999;">No hay mascotas registradas</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- DUEÑOS -->
-            <div id="duenos" class="tab-content">
-                <h2>👥 Gestión de Dueños</h2>
-                
-                <div id="mensajeDuenos" class="message"></div>
-                
-                <form id="formDueno">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="nombreDueno">Nombre Completo *</label>
-                            <input type="text" id="nombreDueno" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="telefonoDueno">Teléfono *</label>
-                            <input type="tel" id="telefonoDueno" required>
+
+                <div id="duenos-empty" style="display: none;">
+                    <div class="card">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <div class="empty-state-text">No hay dueños registrados. ¡Crea uno para comenzar!</div>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="emailDueno">Email</label>
-                            <input type="email" id="emailDueno">
-                        </div>
-                        <div class="form-group">
-                            <label for="direccionDueno">Dirección *</label>
-                            <input type="text" id="direccionDueno" required>
-                        </div>
-                    </div>
-                    <div class="button-group">
-                        <button type="submit" class="btn-primary">➕ Agregar Dueño</button>
-                        <button type="reset" class="btn-secondary">🔄 Limpiar</button>
-                    </div>
-                </form>
-                
-                <h3>Dueños Registrados</h3>
-                <div class="table-container">
-                    <table id="tablaDuenos">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Teléfono</th>
-                                <th>Email</th>
-                                <th>Dirección</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6" style="text-align: center; color: #999;">No hay dueños registrados</td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
-            
-            <!-- MASCOTAS -->
-            <div id="mascotas" class="tab-content">
-                <h2>🐾 Gestión de Mascotas</h2>
-                
-                <div id="mensajeMascotas" class="message"></div>
-                
-                <form id="formMascota">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="nombreMascota">Nombre de la Mascota *</label>
-                            <input type="text" id="nombreMascota" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="especieMascota">Especie *</label>
-                            <select id="especieMascota" required>
-                                <option value="">-- Seleccione --</option>
-                                <option value="Perro">Perro</option>
-                                <option value="Gato">Gato</option>
-                                <option value="Ave">Ave</option>
-                                <option value="Roedor">Roedor</option>
-                                <option value="Reptil">Reptil</option>
-                                <option value="Otro">Otro</option>
-                            </select>
-                        </div>
+
+            <!-- Gestión de Veterinarios -->
+            <div id="veterinarios-page" class="page" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Gestión de Veterinarios</h1>
+                    <button class="btn btn-primary" onclick="openModal('veterinarios')">
+                        ➕ Agregar Veterinario
+                    </button>
+                </div>
+
+                <div id="veterinarios-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Cargando veterinarios...</p>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="razaMascota">Raza</label>
-                            <input type="text" id="razaMascota">
-                        </div>
-                        <div class="form-group">
-                            <label for="fechaNacMascota">Fecha de Nacimiento *</label>
-                            <input type="date" id="fechaNacMascota" required>
-                        </div>
-                    </div>
-                    <div class="form-row full">
-                        <div class="form-group">
-                            <label for="duenioMascota">Dueño *</label>
-                            <select id="duenioMascota" required>
-                                <option value="">-- Seleccione un dueño --</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="button-group">
-                        <button type="submit" class="btn-primary">➕ Agregar Mascota</button>
-                        <button type="reset" class="btn-secondary">🔄 Limpiar</button>
-                    </div>
-                </form>
-                
-                <h3>Mascotas Registradas</h3>
-                <div class="table-container">
-                    <table id="tablaMascotas">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Especie</th>
-                                <th>Raza</th>
-                                <th>Fecha Nacimiento</th>
-                                <th>Dueño</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="7" style="text-align: center; color: #999;">No hay mascotas registradas</td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
-            
-            <!-- VETERINARIOS -->
-            <div id="veterinarios" class="tab-content">
-                <h2>👨‍⚕️ Gestión de Veterinarios</h2>
-                
-                <div id="mensajeVeterinarios" class="message"></div>
-                
-                <form id="formVeterinario">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="nombreVet">Nombre del Veterinario *</label>
-                            <input type="text" id="nombreVet" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="especialidadVet">Especialidad *</label>
-                            <select id="especialidadVet" required>
-                                <option value="">-- Seleccione --</option>
-                                <option value="Perros">Perros</option>
-                                <option value="Gatos">Gatos</option>
-                                <option value="Aves">Aves</option>
-                                <option value="Exóticos">Exóticos</option>
-                                <option value="General">General</option>
-                                <option value="Cirugía">Cirugía</option>
-                                <option value="Dermatología">Dermatología</option>
-                            </select>
-                        </div>
+
+            <!-- Gestión de Mascotas -->
+            <div id="mascotas-page" class="page" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Gestión de Mascotas</h1>
+                    <button class="btn btn-primary" onclick="openModal('mascotas')">
+                        ➕ Agregar Mascota
+                    </button>
+                </div>
+
+                <div id="mascotas-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Cargando mascotas...</p>
                     </div>
-                    <div class="form-row full">
-                        <div class="form-group">
-                            <label for="telefonoVet">Teléfono *</label>
-                            <input type="tel" id="telefonoVet" required>
-                        </div>
-                    </div>
-                    <div class="button-group">
-                        <button type="submit" class="btn-primary">➕ Agregar Veterinario</button>
-                        <button type="reset" class="btn-secondary">🔄 Limpiar</button>
-                    </div>
-                </form>
-                
-                <h3>Veterinarios Registrados</h3>
-                <div class="table-container">
-                    <table id="tablaVeterinarios">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Especialidad</th>
-                                <th>Teléfono</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="5" style="text-align: center; color: #999;">No hay veterinarios registrados</td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
-            
-            <!-- CONSULTAS -->
-            <div id="consultas" class="tab-content">
-                <h2>📋 Gestión de Consultas</h2>
-                
-                <div id="mensajeConsultas" class="message"></div>
-                
-                <form id="formConsulta">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="mascotaConsulta">Mascota *</label>
-                            <select id="mascotaConsulta" required>
-                                <option value="">-- Seleccione una mascota --</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="veterinarioConsulta">Veterinario *</label>
-                            <select id="veterinarioConsulta" required>
-                                <option value="">-- Seleccione un veterinario --</option>
-                            </select>
-                        </div>
+
+            <!-- Gestión de Consultas -->
+            <div id="consultas-page" class="page" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Gestión de Consultas</h1>
+                    <button class="btn btn-primary" onclick="openModal('consultas')">
+                        ➕ Agregar Consulta
+                    </button>
+                </div>
+
+                <div id="consultas-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Cargando consultas...</p>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="fechaConsulta">Fecha de Consulta *</label>
-                            <input type="datetime-local" id="fechaConsulta" required>
-                        </div>
-                    </div>
-                    <div class="form-row full">
-                        <div class="form-group">
-                            <label for="motivoConsulta">Motivo de Consulta *</label>
-                            <textarea id="motivoConsulta" required placeholder="Describa el motivo de la consulta..."></textarea>
-                        </div>
-                    </div>
-                    <div class="form-row full">
-                        <div class="form-group">
-                            <label for="diagnosticoConsulta">Diagnóstico</label>
-                            <textarea id="diagnosticoConsulta" placeholder="Describa el diagnóstico..."></textarea>
-                        </div>
-                    </div>
-                    <div class="button-group">
-                        <button type="submit" class="btn-primary">➕ Agregar Consulta</button>
-                        <button type="reset" class="btn-secondary">🔄 Limpiar</button>
-                    </div>
-                </form>
-                
-                <h3>Historial de Consultas</h3>
-                <div class="table-container">
-                    <table id="tablaConsultas">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Mascota</th>
-                                <th>Veterinario</th>
-                                <th>Fecha</th>
-                                <th>Motivo</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6" style="text-align: center; color: #999;">No hay consultas registradas</td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
-            
-            <!-- VACUNAS -->
-            <div id="vacunas" class="tab-content">
-                <h2>💉 Gestión de Vacunas</h2>
-                
-                <div id="mensajeVacunas" class="message"></div>
-                
-                <h3>Tipos de Vacunas</h3>
-                <form id="formTipoVacuna" style="margin-bottom: 30px;">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="nombreVacuna">Nombre de la Vacuna *</label>
-                            <input type="text" id="nombreVacuna" required placeholder="Ej: Rabia, Parvovirus, etc.">
-                        </div>
-                        <div class="form-group">
-                            <label for="descripcionVacuna">Descripción</label>
-                            <input type="text" id="descripcionVacuna" placeholder="Descripción de la vacuna">
-                        </div>
+
+            <!-- Gestión de Vacunas -->
+            <div id="vacunas-page" class="page" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">Gestión de Vacunas</h1>
+                    <button class="btn btn-primary" onclick="openModal('vacunas')">
+                        ➕ Agregar Vacuna
+                    </button>
+                </div>
+
+                <div id="vacunas-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Cargando vacunas...</p>
                     </div>
-                    <div class="button-group">
-                        <button type="submit" class="btn-primary">➕ Agregar Tipo de Vacuna</button>
-                    </div>
-                </form>
-                
-                <h3>Registrar Aplicación de Vacuna</h3>
-                <form id="formRegistroVacuna">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="mascotaVacuna">Mascota *</label>
-                            <select id="mascotaVacuna" required>
-                                <option value="">-- Seleccione una mascota --</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="tipoVacuna">Tipo de Vacuna *</label>
-                            <select id="tipoVacuna" required>
-                                <option value="">-- Seleccione una vacuna --</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row full">
-                        <div class="form-group">
-                            <label for="fechaVacuna">Fecha de Aplicación *</label>
-                            <input type="date" id="fechaVacuna" required>
-                        </div>
-                    </div>
-                    <div class="button-group">
-                        <button type="submit" class="btn-primary">💉 Registrar Vacuna</button>
-                        <button type="reset" class="btn-secondary">🔄 Limpiar</button>
-                    </div>
-                </form>
-                
-                <h3>Historial de Vacunación</h3>
-                <div class="table-container">
-                    <table id="tablaVacunas">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Mascota</th>
-                                <th>Vacuna</th>
-                                <th>Fecha Aplicación</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="5" style="text-align: center; color: #999;">No hay vacunas registradas</td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
+        </main>
+    </div>
+
+    <!-- Modal for Forms -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div class="modal-header" id="modal-title">Nuevo Dueño</div>
+            <form id="form" onsubmit="handleSubmit(event)">
+                <div id="form-fields"></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 20px;">
+                    Guardar
+                </button>
+            </form>
         </div>
     </div>
-    
-    <script>
-        // ============ SISTEMA DE ALMACENAMIENTO LOCAL ============
-        
-        // Inicializar datos si no existen
-        function inicializarDatos() {
-            if (!localStorage.getItem('duenos')) {
-                localStorage.setItem('duenos', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('mascotas')) {
-                localStorage.setItem('mascotas', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('veterinarios')) {
-                localStorage.setItem('veterinarios', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('consultas')) {
-                localStorage.setItem('consultas', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('tiposVacunas')) {
-                localStorage.setItem('tiposVacunas', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('registrosVacunas')) {
-                localStorage.setItem('registrosVacunas', JSON.stringify([]));
-            }
-        }
-        
-        // Obtener datos
-        function obtenerDatos(tipo) {
-            return JSON.parse(localStorage.getItem(tipo) || '[]');
-        }
-        
-        // Guardar datos
-        function guardarDatos(tipo, datos) {
-            localStorage.setItem(tipo, JSON.stringify(datos));
-        }
-        
-        // Generar ID único
-        function generarId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
-        }
-        
-        // ============ FUNCIONES DE TAB ============
-        function switchTab(tabName, event) {
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active'));
-            
-            const buttons = document.querySelectorAll('.tab-button');
-            buttons.forEach(button => button.classList.remove('active'));
-            
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-            
-            cargarTodosDatos();
-        }
-        
-        // ============ AGREGAR DUEÑO ============
-        function agregarDueno(event) {
-            event.preventDefault();
-            
-            const nombre = document.getElementById('nombreDueno').value.trim();
-            const telefono = document.getElementById('telefonoDueno').value.trim();
-            const email = document.getElementById('emailDueno').value.trim();
-            const direccion = document.getElementById('direccionDueno').value.trim();
-            
-            // Validación
-            if (!nombre || !telefono || !direccion) {
-                mostrarMensaje('mensajeDuenos', '❌ Complete todos los campos obligatorios', 'error');
-                return;
-            }
-            
-            const nuevoDueno = {
-                id_dueño: generarId(),
-                nombre,
-                telefono,
-                email,
-                direccion,
-                fecha_registro: new Date().toISOString()
-            };
-            
-            const duenos = obtenerDatos('duenos');
-            duenos.push(nuevoDueno);
-            guardarDatos('duenos', duenos);
-            
-            mostrarMensaje('mensajeDuenos', '✅ Dueño agregado correctamente', 'success');
-            document.getElementById('formDueno').reset();
-            cargarDuenos();
-        }
-        
-        // ============ AGREGAR MASCOTA ============
-        function agregarMascota(event) {
-            event.preventDefault();
-            
-            const nombre = document.getElementById('nombreMascota').value.trim();
-            const especie = document.getElementById('especieMascota').value;
-            const raza = document.getElementById('razaMascota').value.trim();
-            const fecha_nac = document.getElementById('fechaNacMascota').value;
-            const id_dueño = document.getElementById('duenioMascota').value;
-            
-            // Validación
-            if (!nombre || !especie || !fecha_nac || !id_dueño) {
-                mostrarMensaje('mensajeMascotas', '❌ Complete todos los campos obligatorios', 'error');
-                return;
-            }
-            
-            const nuevaMascota = {
-                id_mascota: generarId(),
-                nombre,
-                especie,
-                raza,
-                fecha_nac,
-                id_dueño,
-                fecha_registro: new Date().toISOString()
-            };
-            
-            const mascotas = obtenerDatos('mascotas');
-            mascotas.push(nuevaMascota);
-            guardarDatos('mascotas', mascotas);
-            
-            mostrarMensaje('mensajeMascotas', '✅ Mascota agregada correctamente', 'success');
-            document.getElementById('formMascota').reset();
-            cargarMascotas();
-        }
-        
-        // ============ AGREGAR VETERINARIO ============
-        function agregarVeterinario(event) {
-            event.preventDefault();
-            
-            const nombre = document.getElementById('nombreVet').value.trim();
-            const especialidad = document.getElementById('especialidadVet').value;
-            const telefono = document.getElementById('telefonoVet').value.trim();
-            
-            // Validación
-            if (!nombre || !especialidad || !telefono) {
-                mostrarMensaje('mensajeVeterinarios', '❌ Complete todos los campos obligatorios', 'error');
-                return;
-            }
-            
-            const nuevoVeterinario = {
-                id_vet: generarId(),
-                nombre,
-                especialidad,
-                telefono,
-                fecha_registro: new Date().toISOString()
-            };
-            
-            const veterinarios = obtenerDatos('veterinarios');
-            veterinarios.push(nuevoVeterinario);
-            guardarDatos('veterinarios', veterinarios);
-            
-            mostrarMensaje('mensajeVeterinarios', '✅ Veterinario agregado correctamente', 'success');
-            document.getElementById('formVeterinario').reset();
-            cargarVeterinarios();
-        }
-        
-        // ============ AGREGAR CONSULTA ============
-        function agregarConsulta(event) {
-            event.preventDefault();
-            
-            const id_mascota = document.getElementById('mascotaConsulta').value;
-            const id_vet = document.getElementById('veterinarioConsulta').value;
-            const fecha = document.getElementById('fechaConsulta').value;
-            const motivo = document.getElementById('motivoConsulta').value.trim();
-            const diagnostico = document.getElementById('diagnosticoConsulta').value.trim();
-            
-            // Validación
-            if (!id_mascota || !id_vet || !fecha || !motivo) {
-                mostrarMensaje('mensajeConsultas', '❌ Complete todos los campos obligatorios', 'error');
-                return;
-            }
-            
-            const nuevaConsulta = {
-                id_consulta: generarId(),
-                id_mascota,
-                id_vet,
-                fecha,
-                motivo,
-                diagnostico,
-                fecha_registro: new Date().toISOString()
-            };
-            
-            const consultas = obtenerDatos('consultas');
-            consultas.push(nuevaConsulta);
-            guardarDatos('consultas', consultas);
-            
-            mostrarMensaje('mensajeConsultas', '✅ Consulta agregada correctamente', 'success');
-            document.getElementById('formConsulta').reset();
-            cargarConsultas();
-        }
-        
-        // ============ AGREGAR TIPO DE VACUNA ============
-        function agregarTipoVacuna(event) {
-            event.preventDefault();
-            
-            const nombre_vacuna = document.getElementById('nombreVacuna').value.trim();
-            const descripcion = document.getElementById('descripcionVacuna').value.trim();
-            
-            // Validación
-            if (!nombre_vacuna) {
-                mostrarMensaje('mensajeVacunas', '❌ El nombre de la vacuna es obligatorio', 'error');
-                return;
-            }
-            
-            const nuevoTipoVacuna = {
-                id_tipo_vacuna: generarId(),
-                nombre_vacuna,
-                descripcion,
-                fecha_registro: new Date().toISOString()
-            };
-            
-            const tiposVacunas = obtenerDatos('tiposVacunas');
-            tiposVacunas.push(nuevoTipoVacuna);
-            guardarDatos('tiposVacunas', tiposVacunas);
-            
-            mostrarMensaje('mensajeVacunas', '✅ Tipo de vacuna agregado correctamente', 'success');
-            document.getElementById('formTipoVacuna').reset();
-            cargarTiposVacunas();
-        }
-        
-        // ============ AGREGAR REGISTRO DE VACUNA ============
-        function agregarRegistroVacuna(event) {
-            event.preventDefault();
-            
-            const id_mascota = document.getElementById('mascotaVacuna').value;
-            const id_tipo_vacuna = document.getElementById('tipoVacuna').value;
-            const fecha_aplicacion = document.getElementById('fechaVacuna').value;
-            
-            // Validación
-            if (!id_mascota || !id_tipo_vacuna || !fecha_aplicacion) {
-                mostrarMensaje('mensajeVacunas', '❌ Complete todos los campos obligatorios', 'error');
-                return;
-            }
-            
-            const nuevoRegistroVacuna = {
-                id_registro_vacuna: generarId(),
-                id_mascota,
-                id_tipo_vacuna,
-                fecha_aplicacion,
-                fecha_registro: new Date().toISOString()
-            };
-            
-            const registrosVacunas = obtenerDatos('registrosVacunas');
-            registrosVacunas.push(nuevoRegistroVacuna);
-            guardarDatos('registrosVacunas', registrosVacunas);
-            
-            mostrarMensaje('mensajeVacunas', '✅ Vacuna registrada correctamente', 'success');
-            document.getElementById('formRegistroVacuna').reset();
-            cargarRegistrosVacunas();
-        }
-        
-        // ============ CARGAR DATOS ============
-    
+
+    <script src="script.js"></script>
+</body>
+</html>
