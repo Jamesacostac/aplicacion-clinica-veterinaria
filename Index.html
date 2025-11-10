@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicación de Gestión - Clínica Veterinaria</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Gestión de Clínica Veterinaria</h1>
+            <p>Sistema Conectado Directamente a SQL Server</p>
+            <div class="connection-status" id="statusConexion">
+                🔴 Verificando conexión...
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="tab-button" onclick="switchTab('duenos')">👥 Dueños</button>
+            <button class="tab-button" onclick="switchTab('mascotas')">🐾 Mascotas</button>
+            <button class="tab-button" onclick="switchTab('veterinarios')">👨‍⚕️ Veterinarios</button>
+            <button class="tab-button" onclick="switchTab('consultas')">📋 Consultas</button>
+            <button class="tab-button" onclick="switchTab('vacunas')">💉 Vacunas</button>
+        </div>
+        
+        <div class="content">
+            <!-- DASHBOARD -->
+            <div id="dashboard" class="tab-content active">
+                <h2>📊 Panel de Control</h2>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="countDuenos">0</div>
+                        <div class="stat-label">Dueños</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="countMascotas">0</div>
+                        <div class="stat-label">Mascotas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="countVeterinarios">0</div>
+                        <div class="stat-label">Veterinarios</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="countConsultas">0</div>
+                        <div class="stat-label">Consultas</div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <strong>ℹ️ Información:</strong> Los datos se guardan automáticamente en SQL Server.
+                </div>
+                
+                <h3>Últimas Mascotas</h3>
+                <div class="table-container">
+                    <table id="tablaMascotasRecientes">
+                        <thead>
+                            <tr>
+                                <th>Mascota</th>
+                                <th>Especie</th>
+                                <th>Raza</th>
+                                <th>Dueño</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #999;">Cargando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- DUEÑOS -->
+            <div id="duenos" class="tab-content">
+                <h2>👥 Gestión de Dueños</h2>
+                
+                <div id="mensajeDuenos" class="message"></div>
+                
+                <form onsubmit="agregarDueno(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombreDueno">Nombre Completo *</label>
+                            <input type="text" id="nombreDueno" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="telefonoDueno">Teléfono *</label>
+                            <input type="tel" id="telefonoDueno" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="emailDueno">Email</label>
+                            <input type="email" id="emailDueno">
+                        </div>
+                        <div class="form-group">
+                            <label for="direccionDueno">Dirección *</label>
+                            <input type="text" id="direccionDueno" required>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary">➕ Agregar Dueño</button>
+                        <button type="reset" class="btn-secondary">🔄 Limpiar</button>
+                    </div>
+                </form>
+                
+                <h3>Dueños en SQL Server</h3>
+                <div class="table-container">
+                    <table id="tablaDuenos">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Teléfono</th>
+                                <th>Email</th>
+                                <th>Dirección</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #999;">Cargando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- MASCOTAS -->
+            <div id="mascotas" class="tab-content">
+                <h2>🐾 Gestión de Mascotas</h2>
+                
+                <div id="mensajeMascotas" class="message"></div>
+                
+                <form onsubmit="agregarMascota(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombreMascota">Nombre de la Mascota *</label>
+                            <input type="text" id="nombreMascota" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="especieMascota">Especie *</label>
+                            <select id="especieMascota" required>
+                                <option value="">-- Seleccione --</option>
+                                <option value="Perro">Perro</option>
+                                <option value="Gato">Gato</option>
+                                <option value="Ave">Ave</option>
+                                <option value="Roedor">Roedor</option>
+                                <option value="Reptil">Reptil</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="razaMascota">Raza</label>
+                            <input type="text" id="razaMascota">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaNacMascota">Fecha de Nacimiento *</label>
+                            <input type="date" id="fechaNacMascota" required>
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="duenioMascota">Dueño *</label>
+                            <select id="duenioMascota" required>
+                                <option value="">-- Cargando dueños --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary">➕ Agregar Mascota</button>
+                        <button type="reset" class="btn-secondary">🔄 Limpiar</button>
+                    </div>
+                </form>
+                
+                <h3>Mascotas en SQL Server</h3>
+                <div class="table-container">
+                    <table id="tablaMascotas">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Especie</th>
+                                <th>Raza</th>
+                                <th>Fecha Nacimiento</th>
+                                <th>Dueño</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #999;">Cargando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- VETERINARIOS -->
+            <div id="veterinarios" class="tab-content">
+                <h2>👨‍⚕️ Gestión de Veterinarios</h2>
+                
+                <div id="mensajeVeterinarios" class="message"></div>
+                
+                <form onsubmit="agregarVeterinario(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombreVet">Nombre del Veterinario *</label>
+                            <input type="text" id="nombreVet" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="especialidadVet">Especialidad *</label>
+                            <select id="especialidadVet" required>
+                                <option value="">-- Seleccione --</option>
+                                <option value="Perros">Perros</option>
+                                <option value="Gatos">Gatos</option>
+                                <option value="Aves">Aves</option>
+                                <option value="Exóticos">Exóticos</option>
+                                <option value="General">General</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="telefonoVet">Teléfono *</label>
+                            <input type="tel" id="telefonoVet" required>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary">➕ Agregar Veterinario</button>
+                        <button type="reset" class="btn-secondary">🔄 Limpiar</button>
+                    </div>
+                </form>
+                
+                <h3>Veterinarios en SQL Server</h3>
+                <div class="table-container">
+                    <table id="tablaVeterinarios">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Especialidad</th>
+                                <th>Teléfono</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #999;">Cargando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- CONSULTAS -->
+            <div id="consultas" class="tab-content">
+                <h2>📋 Gestión de Consultas</h2>
+                
+                <div id="mensajeConsultas" class="message"></div>
+                
+                <form onsubmit="agregarConsulta(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="mascotaConsulta">Mascota *</label>
+                            <select id="mascotaConsulta" required>
+                                <option value="">-- Cargando mascotas --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="veterinarioConsulta">Veterinario *</label>
+                            <select id="veterinarioConsulta" required>
+                                <option value="">-- Cargando veterinarios --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fechaConsulta">Fecha de Consulta *</label>
+                            <input type="datetime-local" id="fechaConsulta" required>
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="motivoConsulta">Motivo de Consulta *</label>
+                            <textarea id="motivoConsulta" required></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="diagnosticoConsulta">Diagnóstico</label>
+                            <textarea id="diagnosticoConsulta"></textarea>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary">➕ Agregar Consulta</button>
+                        <button type="reset" class="btn-secondary">🔄 Limpiar</button>
+                    </div>
+                </form>
+                
+                <h3>Consultas en SQL Server</h3>
+                <div class="table-container">
+                    <table id="tablaConsultas">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Mascota</th>
+                                <th>Veterinario</th>
+                                <th>Fecha</th>
+                                <th>Motivo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #999;">Cargando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- VACUNAS -->
+            <div id="vacunas" class="tab-content">
+                <h2>💉 Gestión de Vacunas</h2>
+                
+                <div id="mensajeVacunas" class="message"></div>
+                
+                <h3>Tipos de Vacunas</h3>
+                <form onsubmit="agregarTipoVacuna(event)" style="margin-bottom: 30px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombreVacuna">Nombre de la Vacuna *</label>
+                            <input type="text" id="nombreVacuna" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="descripcionVacuna">Descripción</label>
+                            <input type="text" id="descripcionVacuna">
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary">➕ Agregar Tipo de Vacuna</button>
+                    </div>
+                </form>
+                
+                <h3>Registrar Aplicación de Vacuna</h3>
+                <form onsubmit="agregarRegistroVacuna(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="mascotaVacuna">Mascota *</label>
+                            <select id="mascotaVacuna" required>
+                                <option value="">-- Cargando mascotas --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tipoVacuna">Tipo de Vacuna *</label>
+                            <select id="tipoVacuna" required>
+                                <option value="">-- Cargando vacunas --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="fechaVacuna">Fecha de Aplicación *</label>
+                            <input type="date" id="fechaVacuna" required>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn-primary">💉 Registrar Vacuna</button>
+                        <button type="reset" class="btn-secondary">🔄 Limpiar</button>
+                    </div>
+                </form>
+                
+                <h3>Historial de Vacunación</h3>
+                <div class="table-container">
+                    <table id="tablaVacunas">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Mascota</th>
+                                <th>Vacuna</th>
+                                <th>Fecha Aplicación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #999;">Cargando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
