@@ -1,252 +1,314 @@
-const API_URL = 'http://localhost:3000/api';
+// Data Storage (Simulated Database)
+let data = {
+    duenos: [
+        { id: 1, nombre: "Ana García López", telefono: "555-0101", direccion: "Calle Principal 123", email: "ana@email.com" },
+        { id: 2, nombre: "Carlos Rodríguez Pérez", telefono: "555-0102", direccion: "Avenida Central 456", email: "carlos@email.com" },
+        { id: 3, nombre: "María Martínez Sánchez", telefono: "555-0103", direccion: "Calle Secundaria 789", email: "maria@email.com" },
+        { id: 4, nombre: "Juan Fernández López", telefono: "555-0104", direccion: "Avenida Norte 321", email: "juan@email.com" },
+        { id: 5, nombre: "Rosa Gómez Jiménez", telefono: "555-0105", direccion: "Calle Sur 654", email: "rosa@email.com" }
+    ],
+    veterinarios: [
+        { id: 1, nombre: "Dr. Miguel Sánchez", cedula: "12345", especialidad: "Cirugía" },
+        { id: 2, nombre: "Dra. Laura Martínez", cedula: "54321", especialidad: "Dermatología" },
+        { id: 3, nombre: "Dr. Carlos López", cedula: "11111", especialidad: "Medicina General" },
+        { id: 4, nombre: "Dra. Ana Rodríguez", cedula: "22222", especialidad: "Oftalmología" }
+    ],
+    mascotas: [
+        { id: 1, nombre: "Max", especie: "Perro", raza: "Pastor Alemán", peso: 25, dueno_id: 1 },
+        { id: 2, nombre: "Miau", especie: "Gato", raza: "Persa", peso: 4, dueno_id: 2 },
+        { id: 3, nombre: "Buddy", especie: "Perro", raza: "Golden Retriever", peso: 30, dueno_id: 3 },
+        { id: 4, nombre: "Luna", especie: "Gato", raza: "Siamés", peso: 3.5, dueno_id: 4 },
+        { id: 5, nombre: "Rocky", especie: "Perro", raza: "Rottweiler", peso: 35, dueno_id: 5 },
+        { id: 6, nombre: "Bella", especie: "Conejo", raza: "Holandés", peso: 2, dueno_id: 1 }
+    ],
+    consultas: [
+        { id: 1, fecha: "2024-10-15", mascota_id: 1, vet_id: 1, motivo: "Revisión general", diagnostico: "Saludable" },
+        { id: 2, fecha: "2024-10-18", mascota_id: 2, vet_id: 2, motivo: "Infección de oído", diagnostico: "Otitis" },
+        { id: 3, fecha: "2024-10-20", mascota_id: 3, vet_id: 1, motivo: "Vacunación", diagnostico: "Completada" },
+        { id: 4, fecha: "2024-10-22", mascota_id: 4, vet_id: 2, motivo: "Corte de uñas", diagnostico: "Realizado" },
+        { id: 5, fecha: "2024-10-25", mascota_id: 5, vet_id: 3, motivo: "Dolor articular", diagnostico: "Artritis leve" }
+    ],
+    vacunas: [
+        { id: 1, nombre: "Rabia", descripcion: "Previene la enfermedad de la rabia" },
+        { id: 2, nombre: "Parvovirus", descripcion: "Previene el parvovirus canino" },
+        { id: 3, nombre: "Leucemia felina", descripcion: "Previene la leucemia en gatos" },
+        { id: 4, nombre: "Moquillo", descripcion: "Previene el moquillo canino" },
+        { id: 5, nombre: "Rinotraqueítis", descripcion: "Previene rinotraqueítis en gatos" },
+        { id: 6, nombre: "Calicivirus", descripcion: "Previene calicivirus felino" }
+    ]
+};
 
-// ============ VERIFICAR CONEXIÓN ============
-async function verificarConexion() {
-    try {
-        const response = await fetch(`${API_URL}/duenos`);
-        if (response.ok) {
-            document.getElementById('statusConexion').textContent = '🟢 Conectado a SQL Server';
-            document.getElementById('statusConexion').className = 'connection-status connected';
-            cargarTodosDatos();
-        } else {
-            mostrarErrorConexion(`Error del servidor: ${response.status}`);
-        }
-    } catch (error) {
-        mostrarErrorConexion(`No se puede conectar al servidor: ${error.message}`);
-    }
+let currentPage = 'duenos';
+let currentModal = null;
+let editingId = null;
+
+// Navigation
+function showPage(page) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    
+    // Show selected page
+    document.getElementById(page + '-page').style.display = 'block';
+    
+    // Update active nav link
+    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+    event.target.closest('.nav-link').classList.add('active');
+    
+    currentPage = page;
+    loadData(page);
 }
 
-function mostrarErrorConexion(mensaje) {
-    document.getElementById('statusConexion').textContent = '🔴 ' + mensaje;
-    document.getElementById('statusConexion').className = 'connection-status disconnected';
-}
-
-// ============ FUNCIONES DE TAB ============
-function switchTab(tabName, event) {
-    const contents = document.querySelectorAll('.tab-content');
-    contents.forEach(content => content.classList.remove('active'));
+// Load and display data
+function loadData(page) {
+    const listId = page + '-list';
+    const emptyId = page + '-empty';
+    const list = document.getElementById(listId);
     
-    const buttons = document.querySelectorAll('.tab-button');
-    buttons.forEach(button => button.classList.remove('active'));
+    let items = data[page] || [];
     
-    document.getElementById(tabName).classList.add('active');
-    event.target.classList.add('active');
-    
-    cargarTodosDatos();
-}
-
-// ============ AGREGAR DUEÑO ============
-async function agregarDueno(event) {
-    event.preventDefault();
-    
-    const nombre = document.getElementById('nombreDueno').value.trim();
-    const telefono = document.getElementById('telefonoDueno').value.trim();
-    const email = document.getElementById('emailDueno').value.trim();
-    const direccion = document.getElementById('direccionDueno').value.trim();
-    
-    // Validación
-    if (!nombre || !telefono || !direccion) {
-        mostrarMensaje('mensajeDuenos', '❌ Complete todos los campos obligatorios', 'error');
+    if (items.length === 0) {
+        list.style.display = 'none';
+        document.getElementById(emptyId).style.display = 'block';
         return;
     }
     
-    try {
-        const response = await fetch(`${API_URL}/duenos`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre, telefono, email, direccion })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            mostrarMensaje('mensajeDuenos', '✅ Dueño agregado correctamente', 'success');
-            event.target.reset();
-            cargarDuenos();
-        } else {
-            mostrarMensaje('mensajeDuenos', '❌ Error: ' + (data.error || 'Desconocido'), 'error');
-        }
-    } catch (error) {
-        mostrarMensaje('mensajeDuenos', '❌ Error de conexión con el servidor', 'error');
+    list.style.display = 'block';
+    document.getElementById(emptyId).style.display = 'none';
+    
+    list.innerHTML = items.map(item => createCard(page, item)).join('');
+}
+
+// Create card HTML
+function createCard(type, item) {
+    let content = '';
+    
+    if (type === 'duenos') {
+        content = `
+            <div class="card-field"><span class="card-field-label">Teléfono:</span> ${item.telefono}</div>
+            <div class="card-field"><span class="card-field-label">Dirección:</span> ${item.direccion || 'N/A'}</div>
+            <div class="card-field"><span class="card-field-label">Email:</span> ${item.email || 'N/A'}</div>
+        `;
+    } else if (type === 'veterinarios') {
+        content = `
+            <div class="card-field"><span class="card-field-label">Cédula:</span> ${item.cedula}</div>
+            <div class="card-field"><span class="card-field-label">Especialidad:</span> ${item.especialidad}</div>
+        `;
+    } else if (type === 'mascotas') {
+        const dueno = data.duenos.find(d => d.id === item.dueno_id);
+        content = `
+            <div class="card-field"><span class="card-field-label">Especie:</span> ${item.especie}</div>
+            <div class="card-field"><span class="card-field-label">Raza:</span> ${item.raza}</div>
+            <div class="card-field"><span class="card-field-label">Peso:</span> ${item.peso} kg</div>
+            <div class="card-field"><span class="card-field-label">Dueño:</span> ${dueno?.nombre || 'N/A'}</div>
+        `;
+    } else if (type === 'consultas') {
+        const mascota = data.mascotas.find(m => m.id === item.mascota_id);
+        const vet = data.veterinarios.find(v => v.id === item.vet_id);
+        content = `
+            <div class="card-field"><span class="card-field-label">Fecha:</span> ${item.fecha}</div>
+            <div class="card-field"><span class="card-field-label">Mascota:</span> ${mascota?.nombre || 'N/A'}</div>
+            <div class="card-field"><span class="card-field-label">Veterinario:</span> ${vet?.nombre || 'N/A'}</div>
+            <div class="card-field"><span class="card-field-label">Motivo:</span> ${item.motivo}</div>
+            <div class="card-field"><span class="card-field-label">Diagnóstico:</span> ${item.diagnostico}</div>
+        `;
+    } else if (type === 'vacunas') {
+        content = `
+            <div class="card-field"><span class="card-field-label">Descripción:</span> ${item.descripcion}</div>
+        `;
+    }
+    
+    return `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">${item.nombre}</h3>
+                <div class="card-actions">
+                    <button class="btn btn-secondary btn-small" onclick="editItem('${type}', ${item.id})">✏️</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteItem('${type}', ${item.id})">🗑️</button>
+                </div>
+            </div>
+            <div class="card-content">
+                ${content}
+            </div>
+        </div>
+    `;
+}
+
+// Modal functions
+function openModal(type) {
+    currentModal = type;
+    editingId = null;
+    document.getElementById('modal-title').textContent = 'Nuevo ' + capitalizeFirst(type);
+    generateFormFields(type);
+    document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+    currentModal = null;
+    editingId = null;
+}
+
+function editItem(type, id) {
+    currentModal = type;
+    editingId = id;
+    const item = data[type].find(i => i.id === id);
+    document.getElementById('modal-title').textContent = 'Editar ' + capitalizeFirst(type);
+    generateFormFields(type, item);
+    document.getElementById('modal').classList.add('active');
+}
+
+function deleteItem(type, id) {
+    if (confirm('¿Estás seguro de que deseas eliminar este elemento?')) {
+        data[type] = data[type].filter(item => item.id !== id);
+        loadData(type);
     }
 }
 
-// ============ AGREGAR MASCOTA ============
-async function agregarMascota(event) {
+// Form generation
+function generateFormFields(type, item = null) {
+    let fields = '';
+    
+    if (type === 'duenos') {
+        fields = `
+            <div class="form-group">
+                <label class="form-label">Nombre completo *</label>
+                <input type="text" class="form-input" id="nombre" value="${item?.nombre || ''}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Teléfono *</label>
+                <input type="tel" class="form-input" id="telefono" value="${item?.telefono || ''}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Dirección</label>
+                <input type="text" class="form-input" id="direccion" value="${item?.direccion || ''}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="email" value="${item?.email || ''}">
+            </div>
+        `;
+    } else if (type === 'veterinarios') {
+        fields = `
+            <div class="form-group">
+                <label class="form-label">Nombre completo *</label>
+                <input type="text" class="form-input" id="nombre" value="${item?.nombre || ''}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Cédula profesional *</label>
+                <input type="text" class="form-input" id="cedula" value="${item?.cedula || ''}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Especialidad</label>
+                <input type="text" class="form-input" id="especialidad" value="${item?.especialidad || ''}">
+            </div>
+        `;
+    } else if (type === 'mascotas') {
+        fields = `
+            <div class="form-group">
+                <label class="form-label">Nombre *</label>
+                <input type="text" class="form-input" id="nombre" value="${item?.nombre || ''}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Especie *</label>
+                <input type="text" class="form-input" id="especie" value="${item?.especie || ''}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Raza</label>
+                <input type="text" class="form-input" id="raza" value="${item?.raza || ''}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Peso (kg)</label>
+                <input type="number" class="form-input" id="peso" value="${item?.peso || ''}" step="0.1">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Dueño *</label>
+                <select class="form-input" id="dueno_id" required>
+                    <option value="">Seleccionar dueño</option>
+                    ${data.duenos.map(d => `<option value="${d.id}" ${item?.dueno_id === d.id ? 'selected' : ''}>${d.nombre}</option>`).join('')}
+                </select>
+            </div>
+        `;
+    } else if (type === 'consultas') {
+        fields = `
+            <div class="form-group">
+                <label class="form-label">Fecha *</label>
+                <input type="date" class="form-input" id="fecha" value="${item?.fecha || ''}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Mascota *</label>
+                <select class="form-input" id="mascota_id" required>
+                    <option value="">Seleccionar mascota</option>
+                    ${data.mascotas.map(m => `<option value="${m.id}" ${item?.mascota_id === m.id ? 'selected' : ''}>${m.nombre}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Veterinario *</label>
+                <select class="form-input" id="vet_id" required>
+                    <option value="">Seleccionar veterinario</option>
+                    ${data.veterinarios.map(v => `<option value="${v.id}" ${item?.vet_id === v.id ? 'selected' : ''}>${v.nombre}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Motivo *</label>
+                <input type="text" class="form-input" id="motivo" value="${item?.motivo || ''}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Diagnóstico</label>
+                <input type="text" class="form-input" id="diagnostico" value="${item?.diagnostico || ''}">
+            </div>
+        `;
+    } else if (type === 'vacunas') {
+        fields = `
+            <div class="form-group">
+                <label class="form-label">Nombre *</label>
+                <input type="text" class="form-input" id="nombre" value="${item?.nombre || ''}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <input type="text" class="form-input" id="descripcion" value="${item?.descripcion || ''}">
+            </div>
+        `;
+    }
+    
+    document.getElementById('form-fields').innerHTML = fields;
+}
+
+// Form submission
+function handleSubmit(event) {
     event.preventDefault();
     
-    const nombre = document.getElementById('nombreMascota').value.trim();
-    const especie = document.getElementById('especieMascota').value;
-    const raza = document.getElementById('razaMascota').value.trim();
-    const fecha_nac = document.getElementById('fechaNacMascota').value;
-    const id_dueño = parseInt(document.getElementById('duenioMascota').value);
+    const fields = document.querySelectorAll('.form-input');
+    const data_obj = {};
     
-    // Validación
-    if (!nombre || !especie || !fecha_nac || !id_dueño) {
-        mostrarMensaje('mensajeMascotas', '❌ Complete todos los campos obligatorios', 'error');
-        return;
+    fields.forEach(field => {
+        data_obj[field.id] = field.value;
+    });
+    
+    if (editingId) {
+        const index = data[currentModal].findIndex(i => i.id === editingId);
+        data[currentModal][index] = { ...data[currentModal][index], ...data_obj };
+    } else {
+        const newId = Math.max(...data[currentModal].map(i => i.id), 0) + 1;
+        data[currentModal].push({ id: newId, ...data_obj });
     }
     
-    try {
-        const response = await fetch(`${API_URL}/mascotas`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre, especie, raza, fecha_nac, id_dueño })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            mostrarMensaje('mensajeMascotas', '✅ Mascota agregada correctamente', 'success');
-            event.target.reset();
-            cargarMascotas();
-        } else {
-            mostrarMensaje('mensajeMascotas', '❌ Error: ' + (data.error || 'Desconocido'), 'error');
-        }
-    } catch (error) {
-        mostrarMensaje('mensajeMascotas', '❌ Error de conexión con el servidor', 'error');
-    }
+    loadData(currentModal);
+    closeModal();
 }
 
-// ============ AGREGAR VETERINARIO ============
-async function agregarVeterinario(event) {
-    event.preventDefault();
-    
-    const nombre = document.getElementById('nombreVet').value.trim();
-    const especialidad = document.getElementById('especialidadVet').value;
-    const telefono = document.getElementById('telefonoVet').value.trim();
-    
-    // Validación
-    if (!nombre || !especialidad || !telefono) {
-        mostrarMensaje('mensajeVeterinarios', '❌ Complete todos los campos obligatorios', 'error');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/veterinarios`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre, especialidad, telefono })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            mostrarMensaje('mensajeVeterinarios', '✅ Veterinario agregado correctamente', 'success');
-            event.target.reset();
-            cargarVeterinarios();
-        } else {
-            mostrarMensaje('mensajeVeterinarios', '❌ Error: ' + (data.error || 'Desconocido'), 'error');
-        }
-    } catch (error) {
-        mostrarMensaje('mensajeVeterinarios', '❌ Error de conexión con el servidor', 'error');
-    }
+// Utility functions
+function capitalizeFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// ============ AGREGAR CONSULTA ============
-async function agregarConsulta(event) {
-    event.preventDefault();
-    
-    const id_mascota = parseInt(document.getElementById('mascotaConsulta').value);
-    const id_vet = parseInt(document.getElementById('veterinarioConsulta').value);
-    const fecha = document.getElementById('fechaConsulta').value;
-    const motivo = document.getElementById('motivoConsulta').value.trim();
-    const diagnostico = document.getElementById('diagnosticoConsulta').value.trim();
-    
-    // Validación
-    if (!id_mascota || !id_vet || !fecha || !motivo) {
-        mostrarMensaje('mensajeConsultas', '❌ Complete todos los campos obligatorios', 'error');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/consultas`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fecha, motivo, diagnostico, id_mascota, id_vet })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            mostrarMensaje('mensajeConsultas', '✅ Consulta agregada correctamente', 'success');
-            event.target.reset();
-            cargarConsultas();
-        } else {
-            mostrarMensaje('mensajeConsultas', '❌ Error: ' + (data.error || 'Desconocido'), 'error');
-        }
-    } catch (error) {
-        mostrarMensaje('mensajeConsultas', '❌ Error de conexión con el servidor', 'error');
-    }
-}
+// Initialize
+window.addEventListener('load', () => {
+    loadData('duenos');
+});
 
-// ============ AGREGAR TIPO DE VACUNA ============
-async function agregarTipoVacuna(event) {
-    event.preventDefault();
-    
-    const nombre_vacuna = document.getElementById('nombreVacuna').value.trim();
-    const descripcion = document.getElementById('descripcionVacuna').value.trim();
-    
-    // Validación
-    if (!nombre_vacuna) {
-        mostrarMensaje('mensajeVacunas', '❌ El nombre de la vacuna es obligatorio', 'error');
-        return;
+// Close modal when clicking outside
+document.getElementById('modal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('modal')) {
+        closeModal();
     }
-    
-    try {
-        const response = await fetch(`${API_URL}/tipos-vacunas`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre_vacuna, descripcion })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            mostrarMensaje('mensajeVacunas', '✅ Tipo de vacuna agregado correctamente', 'success');
-            event.target.reset();
-            cargarTiposVacunas();
-        } else {
-            mostrarMensaje('mensajeVacunas', '❌ Error: ' + (data.error || 'Desconocido'), 'error');
-        }
-    } catch (error) {
-        mostrarMensaje('mensajeVacunas', '❌ Error de conexión con el servidor', 'error');
-    }
-}
-
-// ============ AGREGAR REGISTRO DE VACUNA ============
-async function agregarRegistroVacuna(event) {
-    event.preventDefault();
-    
-    const id_mascota = parseInt(document.getElementById('mascotaVacuna').value);
-    const id_tipo_vacuna = parseInt(document.getElementById('tipoVacuna').value);
-    const fecha_aplicacion = document.getElementById('fechaVacuna').value;
-    
-    // Validación
-    if (!id_mascota || !id_tipo_vacuna || !fecha_aplicacion) {
-        mostrarMensaje('mensajeVacunas', '❌ Complete todos los campos obligatorios', 'error');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/registros-vacunas`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id_mascota, id_tipo_vacuna, fecha_aplicacion })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            mostrarMensaje('mensajeVacunas', '✅ Vacuna registrada correctamente', 'success');
-            event.target.reset();
-            cargarRegistrosVacunas();
-        } else {
-            mostrarMensaje('mensajeVacunas', '❌ Error: ' + (data.error || 'Desconocido'), 'error');
-        }
-    } catch (error) {
-        mostrarMensaje('mensajeVacunas', '❌ Error de conexión con el servidor', 'error');
-    }
-}
-
-//
+});
