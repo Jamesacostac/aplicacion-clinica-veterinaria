@@ -17,12 +17,12 @@
         </div>
         
         <div class="tabs">
-            <button class="tab-button active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-            <button class="tab-button" onclick="switchTab('duenos')">👥 Dueños</button>
-            <button class="tab-button" onclick="switchTab('mascotas')">🐾 Mascotas</button>
-            <button class="tab-button" onclick="switchTab('veterinarios')">👨‍⚕️ Veterinarios</button>
-            <button class="tab-button" onclick="switchTab('consultas')">📋 Consultas</button>
-            <button class="tab-button" onclick="switchTab('vacunas')">💉 Vacunas</button>
+            <button class="tab-button active" onclick="switchTab('dashboard', event)">📊 Dashboard</button>
+            <button class="tab-button" onclick="switchTab('duenos', event)">👥 Dueños</button>
+            <button class="tab-button" onclick="switchTab('mascotas', event)">🐾 Mascotas</button>
+            <button class="tab-button" onclick="switchTab('veterinarios', event)">👨‍⚕️ Veterinarios</button>
+            <button class="tab-button" onclick="switchTab('consultas', event)">📋 Consultas</button>
+            <button class="tab-button" onclick="switchTab('vacunas', event)">💉 Vacunas</button>
         </div>
         
         <div class="content">
@@ -50,7 +50,7 @@
                 </div>
                 
                 <div class="info-box">
-                    <strong>ℹ️ Información:</strong> Los datos se guardan automáticamente en SQL Server.
+                    <strong>ℹ️ Información:</strong> Los datos se guardan automáticamente en SQL Server. Verifica que el backend esté ejecutándose en http://localhost:3000
                 </div>
                 
                 <h3>Últimas Mascotas</h3>
@@ -106,7 +106,7 @@
                     </div>
                 </form>
                 
-                <h3>Dueños en SQL Server</h3>
+                <h3>Dueños Registrados</h3>
                 <div class="table-container">
                     <table id="tablaDuenos">
                         <thead>
@@ -148,6 +148,7 @@
                                 <option value="Ave">Ave</option>
                                 <option value="Roedor">Roedor</option>
                                 <option value="Reptil">Reptil</option>
+                                <option value="Otro">Otro</option>
                             </select>
                         </div>
                     </div>
@@ -175,7 +176,7 @@
                     </div>
                 </form>
                 
-                <h3>Mascotas en SQL Server</h3>
+                <h3>Mascotas Registradas</h3>
                 <div class="table-container">
                     <table id="tablaMascotas">
                         <thead>
@@ -218,6 +219,8 @@
                                 <option value="Aves">Aves</option>
                                 <option value="Exóticos">Exóticos</option>
                                 <option value="General">General</option>
+                                <option value="Cirugía">Cirugía</option>
+                                <option value="Dermatología">Dermatología</option>
                             </select>
                         </div>
                     </div>
@@ -233,7 +236,7 @@
                     </div>
                 </form>
                 
-                <h3>Veterinarios en SQL Server</h3>
+                <h3>Veterinarios Registrados</h3>
                 <div class="table-container">
                     <table id="tablaVeterinarios">
                         <thead>
@@ -283,13 +286,13 @@
                     <div class="form-row full">
                         <div class="form-group">
                             <label for="motivoConsulta">Motivo de Consulta *</label>
-                            <textarea id="motivoConsulta" required></textarea>
+                            <textarea id="motivoConsulta" required placeholder="Describa el motivo de la consulta..."></textarea>
                         </div>
                     </div>
                     <div class="form-row full">
                         <div class="form-group">
                             <label for="diagnosticoConsulta">Diagnóstico</label>
-                            <textarea id="diagnosticoConsulta"></textarea>
+                            <textarea id="diagnosticoConsulta" placeholder="Describa el diagnóstico..."></textarea>
                         </div>
                     </div>
                     <div class="button-group">
@@ -298,7 +301,7 @@
                     </div>
                 </form>
                 
-                <h3>Consultas en SQL Server</h3>
+                <h3>Historial de Consultas</h3>
                 <div class="table-container">
                     <table id="tablaConsultas">
                         <thead>
@@ -330,11 +333,11 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="nombreVacuna">Nombre de la Vacuna *</label>
-                            <input type="text" id="nombreVacuna" required>
+                            <input type="text" id="nombreVacuna" required placeholder="Ej: Rabia, Parvovirus, etc.">
                         </div>
                         <div class="form-group">
                             <label for="descripcionVacuna">Descripción</label>
-                            <input type="text" id="descripcionVacuna">
+                            <input type="text" id="descripcionVacuna" placeholder="Descripción de la vacuna">
                         </div>
                     </div>
                     <div class="button-group">
