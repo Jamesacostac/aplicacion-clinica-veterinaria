@@ -3,161 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Clínica Veterinaria</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>VetCare Pro | Gestión Veterinaria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-logo">🏥</div>
-                <div class="sidebar-title">Clínica Vet</div>
+<body class="bg-slate-50 text-slate-800">
+
+    <section id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-blue-600">VetCare</h1>
+                <p class="text-slate-400 text-sm italic">Gestión Médica CUN</p>
             </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link active" onclick="showPage('duenos')">
-                        <span class="nav-icon">👥</span>
-                        Gestión de Dueños
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="showPage('veterinarios')">
-                        <span class="nav-icon">👨‍⚕️</span>
-                        Gestión de Veterinarios
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="showPage('mascotas')">
-                        <span class="nav-icon">🐾</span>
-                        Gestión de Mascotas
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="showPage('consultas')">
-                        <span class="nav-icon">📋</span>
-                        Gestión de Consultas
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="showPage('vacunas')">
-                        <span class="nav-icon">💉</span>
-                        Gestión de Vacunas
-                    </a>
-                </li>
-            </ul>
+            <div class="space-y-4">
+                <p class="text-[10px] text-center text-slate-400 uppercase font-bold tracking-widest">Prueba: correo1@vet.com hasta correo45@vet.com</p>
+                <input type="email" id="login-email" placeholder="Correo electrónico" class="input-field" required>
+                <select id="login-role" class="input-field cursor-pointer">
+                    <option value="doctor">Médico Veterinario (Admin)</option>
+                    <option value="usuario">Propietario (Cliente)</option>
+                </select>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100">
+                    Ingresar al Sistema
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div id="app" class="hidden min-h-screen flex flex-col lg:flex-row">
+        <aside class="w-full lg:w-72 bg-white border-r border-slate-100 p-8 flex flex-col justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-10">VetCare.</h2>
+                <nav id="nav-menu" class="space-y-2"></nav>
+            </div>
+            <button onclick="location.reload()" class="mt-20 text-red-400 text-sm font-medium hover:underline text-left">
+                ✕ Cerrar Sesión
+            </button>
         </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Gestión de Dueños -->
-            <div id="duenos-page" class="page">
-                <div class="page-header">
-                    <h1 class="page-title">Gestión de Dueños</h1>
-                    <button class="btn btn-primary" onclick="openModal('duenos')">
-                        ➕ Agregar Dueño
-                    </button>
+        <main class="flex-1 p-6 lg:p-12 overflow-y-auto">
+            <header class="flex justify-between items-center mb-10">
+                <div>
+                    <h3 id="welcome-msg" class="text-3xl font-light text-slate-600"></h3>
+                    <span id="role-badge" class="badge-age uppercase tracking-widest"></span>
                 </div>
+                <div class="h-12 w-12 rounded-2xl bg-blue-600 text-white shadow-xl flex items-center justify-center font-bold">VC</div>
+            </header>
 
-                <div id="duenos-list">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>Cargando dueños...</p>
-                    </div>
+            <div id="dynamic-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 </div>
-
-                <div id="duenos-empty" style="display: none;">
-                    <div class="card">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">👥</div>
-                            <div class="empty-state-text">No hay dueños registrados. ¡Crea uno para comenzar!</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Gestión de Veterinarios -->
-            <div id="veterinarios-page" class="page" style="display: none;">
-                <div class="page-header">
-                    <h1 class="page-title">Gestión de Veterinarios</h1>
-                    <button class="btn btn-primary" onclick="openModal('veterinarios')">
-                        ➕ Agregar Veterinario
-                    </button>
-                </div>
-
-                <div id="veterinarios-list">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>Cargando veterinarios...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Gestión de Mascotas -->
-            <div id="mascotas-page" class="page" style="display: none;">
-                <div class="page-header">
-                    <h1 class="page-title">Gestión de Mascotas</h1>
-                    <button class="btn btn-primary" onclick="openModal('mascotas')">
-                        ➕ Agregar Mascota
-                    </button>
-                </div>
-
-                <div id="mascotas-list">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>Cargando mascotas...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Gestión de Consultas -->
-            <div id="consultas-page" class="page" style="display: none;">
-                <div class="page-header">
-                    <h1 class="page-title">Gestión de Consultas</h1>
-                    <button class="btn btn-primary" onclick="openModal('consultas')">
-                        ➕ Agregar Consulta
-                    </button>
-                </div>
-
-                <div id="consultas-list">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>Cargando consultas...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Gestión de Vacunas -->
-            <div id="vacunas-page" class="page" style="display: none;">
-                <div class="page-header">
-                    <h1 class="page-title">Gestión de Vacunas</h1>
-                    <button class="btn btn-primary" onclick="openModal('vacunas')">
-                        ➕ Agregar Vacuna
-                    </button>
-                </div>
-
-                <div id="vacunas-list">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>Cargando vacunas...</p>
-                    </div>
-                </div>
-            </div>
         </main>
     </div>
 
-    <!-- Modal for Forms -->
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal()">✕</button>
-            <div class="modal-header" id="modal-title">Nuevo Dueño</div>
-            <form id="form" onsubmit="handleSubmit(event)">
-                <div id="form-fields"></div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 20px;">
-                    Guardar
-                </button>
-            </form>
-        </div>
+    <div id="modal-container" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div id="modal-content" class="bg-white p-8 rounded-[3rem] max-w-2xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            </div>
     </div>
 
     <script src="script.js"></script>
