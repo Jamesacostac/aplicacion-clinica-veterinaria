@@ -1,314 +1,210 @@
-// Data Storage (Simulated Database)
-let data = {
-    duenos: [
-        { id: 1, nombre: "Ana García López", telefono: "555-0101", direccion: "Calle Principal 123", email: "ana@email.com" },
-        { id: 2, nombre: "Carlos Rodríguez Pérez", telefono: "555-0102", direccion: "Avenida Central 456", email: "carlos@email.com" },
-        { id: 3, nombre: "María Martínez Sánchez", telefono: "555-0103", direccion: "Calle Secundaria 789", email: "maria@email.com" },
-        { id: 4, nombre: "Juan Fernández López", telefono: "555-0104", direccion: "Avenida Norte 321", email: "juan@email.com" },
-        { id: 5, nombre: "Rosa Gómez Jiménez", telefono: "555-0105", direccion: "Calle Sur 654", email: "rosa@email.com" }
-    ],
-    veterinarios: [
-        { id: 1, nombre: "Dr. Miguel Sánchez", cedula: "12345", especialidad: "Cirugía" },
-        { id: 2, nombre: "Dra. Laura Martínez", cedula: "54321", especialidad: "Dermatología" },
-        { id: 3, nombre: "Dr. Carlos López", cedula: "11111", especialidad: "Medicina General" },
-        { id: 4, nombre: "Dra. Ana Rodríguez", cedula: "22222", especialidad: "Oftalmología" }
-    ],
-    mascotas: [
-        { id: 1, nombre: "Max", especie: "Perro", raza: "Pastor Alemán", peso: 25, dueno_id: 1 },
-        { id: 2, nombre: "Miau", especie: "Gato", raza: "Persa", peso: 4, dueno_id: 2 },
-        { id: 3, nombre: "Buddy", especie: "Perro", raza: "Golden Retriever", peso: 30, dueno_id: 3 },
-        { id: 4, nombre: "Luna", especie: "Gato", raza: "Siamés", peso: 3.5, dueno_id: 4 },
-        { id: 5, nombre: "Rocky", especie: "Perro", raza: "Rottweiler", peso: 35, dueno_id: 5 },
-        { id: 6, nombre: "Bella", especie: "Conejo", raza: "Holandés", peso: 2, dueno_id: 1 }
-    ],
-    consultas: [
-        { id: 1, fecha: "2024-10-15", mascota_id: 1, vet_id: 1, motivo: "Revisión general", diagnostico: "Saludable" },
-        { id: 2, fecha: "2024-10-18", mascota_id: 2, vet_id: 2, motivo: "Infección de oído", diagnostico: "Otitis" },
-        { id: 3, fecha: "2024-10-20", mascota_id: 3, vet_id: 1, motivo: "Vacunación", diagnostico: "Completada" },
-        { id: 4, fecha: "2024-10-22", mascota_id: 4, vet_id: 2, motivo: "Corte de uñas", diagnostico: "Realizado" },
-        { id: 5, fecha: "2024-10-25", mascota_id: 5, vet_id: 3, motivo: "Dolor articular", diagnostico: "Artritis leve" }
-    ],
-    vacunas: [
-        { id: 1, nombre: "Rabia", descripcion: "Previene la enfermedad de la rabia" },
-        { id: 2, nombre: "Parvovirus", descripcion: "Previene el parvovirus canino" },
-        { id: 3, nombre: "Leucemia felina", descripcion: "Previene la leucemia en gatos" },
-        { id: 4, nombre: "Moquillo", descripcion: "Previene el moquillo canino" },
-        { id: 5, nombre: "Rinotraqueítis", descripcion: "Previene rinotraqueítis en gatos" },
-        { id: 6, nombre: "Calicivirus", descripcion: "Previene calicivirus felino" }
-    ]
+// --- CONFIGURACIÓN DE DATOS REALES ---
+const MEDS = [
+    { n: "Apoquel 5.4mg", p: 125000 }, { n: "Bravecto (Canino)", p: 148000 },
+    { n: "Simparica Trio", p: 115000 }, { n: "Meloxicam Oral", p: 38000 },
+    { n: "Amoxicilina + Clav", p: 45000 }, { n: "Nexgard Specter", p: 132000 },
+    { n: "Enrofloxacina Vet", p: 29000 }, { n: "Vitamina Complejo B", p: 15000 }
+];
+
+const NOMBRES = ["Thor", "Luna", "Coco", "Mia", "Simba", "Nala", "Rocky", "Kira", "Toby", "Lola"];
+
+let DB = {
+    pacientes: JSON.parse(localStorage.getItem('v_pac')) || [],
+    consultas: JSON.parse(localStorage.getItem('v_con')) || [],
+    facturas: JSON.parse(localStorage.getItem('v_fac')) || []
 };
 
-let currentPage = 'duenos';
-let currentModal = null;
-let editingId = null;
+// --- UTILIDADES ---
+const formatCOP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(n);
 
-// Navigation
-function showPage(page) {
-    // Hide all pages
-    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-    
-    // Show selected page
-    document.getElementById(page + '-page').style.display = 'block';
-    
-    // Update active nav link
-    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-    event.target.closest('.nav-link').classList.add('active');
-    
-    currentPage = page;
-    loadData(page);
+function calcularEdad(fecha) {
+    const nac = new Date(fecha);
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    if (hoy.getMonth() < nac.getMonth()) edad--;
+    return `${edad} años`;
 }
 
-// Load and display data
-function loadData(page) {
-    const listId = page + '-list';
-    const emptyId = page + '-empty';
-    const list = document.getElementById(listId);
-    
-    let items = data[page] || [];
-    
-    if (items.length === 0) {
-        list.style.display = 'none';
-        document.getElementById(emptyId).style.display = 'block';
-        return;
+// --- GENERADOR DE 45 PACIENTES Y 675 CONSULTAS ---
+(function seed() {
+    if (DB.pacientes.length === 0) {
+        for (let i = 1; i <= 45; i++) {
+            const email = `correo${i}@vet.com`;
+            const idPet = i.toString();
+            
+            DB.pacientes.push({
+                id: idPet,
+                nombre: NOMBRES[i % 10] + " " + i,
+                especie: i % 2 === 0 ? "Canino" : "Felino",
+                raza: i % 2 === 0 ? "Pastor Alemán" : "Siamés",
+                peso: (i % 20 + 5) + "kg",
+                nacimiento: `201${i % 9}-05-10`,
+                emailDueno: email
+            });
+
+            for (let j = 1; j <= 15; j++) {
+                const idC = Math.random().toString(36).substr(2, 9);
+                const valor = 60000 + (j * 1000);
+                DB.consultas.push({
+                    id: idC, idMascota: idPet, fecha: `2025-0${(j%9)+1}-15`,
+                    motivo: "Control Preventivo", diag: "Paciente en excelente estado.",
+                    med: MEDS[j % 8].n, costo: valor
+                });
+                DB.facturas.push({ idConsulta: idC, emailDueno: email, valor: valor, estado: "PAGADA" });
+            }
+        }
+        localStorage.setItem('v_pac', JSON.stringify(DB.pacientes));
+        localStorage.setItem('v_con', JSON.stringify(DB.consultas));
+        localStorage.setItem('v_fac', JSON.stringify(DB.facturas));
     }
-    
-    list.style.display = 'block';
-    document.getElementById(emptyId).style.display = 'none';
-    
-    list.innerHTML = items.map(item => createCard(page, item)).join('');
+})();
+
+// --- LÓGICA DE NAVEGACIÓN ---
+function handleLogin() {
+    const e = document.getElementById('login-email').value;
+    const r = document.getElementById('login-role').value;
+    if(!e.includes('@')) return alert("Correo inválido");
+    sessionStorage.setItem('u_mail', e);
+    sessionStorage.setItem('u_role', r);
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    init();
 }
 
-// Create card HTML
-function createCard(type, item) {
-    let content = '';
+function init() {
+    const r = sessionStorage.getItem('u_role');
+    const e = sessionStorage.getItem('u_mail');
+    document.getElementById('welcome-msg').innerText = `Hola, ${e.split('@')[0]}`;
+    document.getElementById('role-badge').innerText = r === 'doctor' ? 'Médico Veterinario' : 'Propietario';
     
-    if (type === 'duenos') {
-        content = `
-            <div class="card-field"><span class="card-field-label">Teléfono:</span> ${item.telefono}</div>
-            <div class="card-field"><span class="card-field-label">Dirección:</span> ${item.direccion || 'N/A'}</div>
-            <div class="card-field"><span class="card-field-label">Email:</span> ${item.email || 'N/A'}</div>
-        `;
-    } else if (type === 'veterinarios') {
-        content = `
-            <div class="card-field"><span class="card-field-label">Cédula:</span> ${item.cedula}</div>
-            <div class="card-field"><span class="card-field-label">Especialidad:</span> ${item.especialidad}</div>
-        `;
-    } else if (type === 'mascotas') {
-        const dueno = data.duenos.find(d => d.id === item.dueno_id);
-        content = `
-            <div class="card-field"><span class="card-field-label">Especie:</span> ${item.especie}</div>
-            <div class="card-field"><span class="card-field-label">Raza:</span> ${item.raza}</div>
-            <div class="card-field"><span class="card-field-label">Peso:</span> ${item.peso} kg</div>
-            <div class="card-field"><span class="card-field-label">Dueño:</span> ${dueno?.nombre || 'N/A'}</div>
-        `;
-    } else if (type === 'consultas') {
-        const mascota = data.mascotas.find(m => m.id === item.mascota_id);
-        const vet = data.veterinarios.find(v => v.id === item.vet_id);
-        content = `
-            <div class="card-field"><span class="card-field-label">Fecha:</span> ${item.fecha}</div>
-            <div class="card-field"><span class="card-field-label">Mascota:</span> ${mascota?.nombre || 'N/A'}</div>
-            <div class="card-field"><span class="card-field-label">Veterinario:</span> ${vet?.nombre || 'N/A'}</div>
-            <div class="card-field"><span class="card-field-label">Motivo:</span> ${item.motivo}</div>
-            <div class="card-field"><span class="card-field-label">Diagnóstico:</span> ${item.diagnostico}</div>
-        `;
-    } else if (type === 'vacunas') {
-        content = `
-            <div class="card-field"><span class="card-field-label">Descripción:</span> ${item.descripcion}</div>
+    const menu = document.getElementById('nav-menu');
+    const items = r === 'doctor' ? ['Panel Médico', 'Inventario'] : ['Mis Mascotas', 'Historial y Facturas'];
+    menu.innerHTML = items.map(i => `<button onclick="navegar('${i}')" class="w-full text-left p-4 rounded-2xl hover:bg-blue-50 font-medium text-slate-500 hover:text-blue-600 transition">${i}</button>`).join('');
+    
+    navegar(r === 'doctor' ? 'Panel Médico' : 'Mis Mascotas');
+}
+
+function navegar(v) {
+    const cont = document.getElementById('dynamic-content');
+    const mail = sessionStorage.getItem('u_mail');
+    cont.innerHTML = "";
+
+    if (v === 'Panel Médico') {
+        cont.innerHTML = `
+            <div class="card col-span-full bg-blue-600 text-white flex justify-between items-center">
+                <div><h2 class="text-2xl font-bold">Resumen Clínico</h2><p>45 Pacientes Registrados</p></div>
+                <button onclick="nuevaConsulta()" class="bg-white text-blue-600 px-6 py-3 rounded-2xl font-bold shadow-xl hover:scale-105 transition">+ Nueva Consulta</button>
+            </div>
+            <h3 class="col-span-full font-bold text-xl mt-6">Últimas Consultas</h3>
+            ${DB.consultas.slice(-12).reverse().map(c => {
+                const p = DB.pacientes.find(x => x.id === c.idMascota);
+                return `<div class="card cursor-pointer" onclick="verDetalle('${c.id}')">
+                    <p class="badge-age mb-2 inline-block">${c.fecha}</p>
+                    <h4 class="font-bold">${p.nombre}</h4>
+                    <p class="text-xs text-slate-500">${c.motivo}</p>
+                </div>`;
+            }).join('')}
         `;
     }
-    
-    return `
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">${item.nombre}</h3>
-                <div class="card-actions">
-                    <button class="btn btn-secondary btn-small" onclick="editItem('${type}', ${item.id})">✏️</button>
-                    <button class="btn btn-danger btn-small" onclick="deleteItem('${type}', ${item.id})">🗑️</button>
+
+    if (v === 'Inventario') {
+        cont.innerHTML = `<div class="card col-span-full">
+            <h3 class="font-bold text-xl mb-6">Medicamentos en Stock</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                ${MEDS.map(m => `<div class="p-4 bg-slate-50 rounded-3xl border border-slate-100">
+                    <p class="font-bold text-sm text-slate-700">${m.n}</p>
+                    <p class="text-blue-600 font-bold mt-1">${formatCOP(m.p)}</p>
+                </div>`).join('')}
+            </div>
+        </div>`;
+    }
+
+    if (v === 'Mis Mascotas') {
+        const misP = DB.pacientes.filter(x => x.emailDueno === mail);
+        cont.innerHTML = misP.map(p => `
+            <div class="card border-b-8 border-blue-500">
+                <div class="text-4xl mb-4">🐾</div>
+                <h4 class="font-bold text-2xl">${p.nombre}</h4>
+                <div class="space-y-1 mt-4 text-sm">
+                    <p><b>Edad:</b> ${calcularEdad(p.nacimiento)}</p>
+                    <p><b>Peso:</b> ${p.peso}</p>
+                    <p><b>Raza:</b> ${p.raza}</p>
                 </div>
             </div>
-            <div class="card-content">
-                ${content}
+        `).join('');
+    }
+
+    if (v === 'Historial y Facturas') {
+        const misF = DB.facturas.filter(x => x.emailDueno === mail);
+        cont.innerHTML = misF.reverse().map(f => `
+            <div class="card flex justify-between items-center ${f.estado === 'PENDIENTE' ? 'border-l-8 border-orange-500' : 'border-l-8 border-emerald-500'}">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400">RECIBO #${f.idConsulta.substr(0,5)}</p>
+                    <p class="font-bold text-lg">${formatCOP(f.valor)}</p>
+                    <p class="text-xs ${f.estado === 'PENDIENTE' ? 'text-orange-500' : 'text-emerald-500'} font-black">${f.estado}</p>
+                </div>
+                <button onclick="verDetalle('${f.idConsulta}')" class="bg-slate-100 p-3 rounded-xl text-xs font-bold hover:bg-blue-50">VER DETALLE</button>
             </div>
+        `).join('');
+    }
+}
+
+// --- MODALES ---
+function verDetalle(id) {
+    const c = DB.consultas.find(x => x.id === id);
+    const p = DB.pacientes.find(x => x.id === c.idMascota);
+    document.getElementById('modal-container').classList.remove('hidden');
+    document.getElementById('modal-content').innerHTML = `
+        <h2 class="text-3xl font-bold mb-2">Detalle Clínico</h2>
+        <p class="text-blue-500 font-bold mb-6">${p.nombre} - ${p.especie}</p>
+        <div class="space-y-4 border-t pt-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div><p class="text-[10px] text-slate-400 font-bold">FECHA</p><p class="font-medium">${c.fecha}</p></div>
+                <div><p class="text-[10px] text-slate-400 font-bold">COSTO</p><p class="font-medium">${formatCOP(c.costo)}</p></div>
+            </div>
+            <div><p class="text-[10px] text-slate-400 font-bold">MOTIVO</p><p class="font-medium text-slate-700">${c.motivo}</p></div>
+            <div class="bg-slate-50 p-6 rounded-[2rem]"><p class="text-[10px] text-slate-400 font-bold mb-2">DIAGNÓSTICO</p><p class="italic text-sm text-slate-600">${c.diag}</p></div>
+            <div class="p-4 border-2 border-dashed border-blue-200 rounded-2xl flex justify-between items-center">
+                <span class="font-bold">💊 Recetado: ${c.med}</span>
+            </div>
+        </div>
+        <button onclick="cerrarModal()" class="w-full mt-8 p-4 bg-slate-900 text-white rounded-2xl font-bold">Cerrar</button>
+    `;
+}
+
+function nuevaConsulta() {
+    document.getElementById('modal-container').classList.remove('hidden');
+    document.getElementById('modal-content').innerHTML = `
+        <h2 class="text-2xl font-bold mb-6">Nueva Orden Médica</h2>
+        <div class="space-y-4">
+            <select id="f-pet" class="input-field">${DB.pacientes.map(p => `<option value="${p.id}">${p.nombre} (${p.emailDueno})</option>`).join('')}</select>
+            <input id="f-mot" placeholder="Motivo de consulta" class="input-field">
+            <select id="f-med" class="input-field">${MEDS.map(m => `<option value="${m.n}">${m.n} - ${formatCOP(m.p)}</option>`).join('')}</select>
+            <input id="f-cos" type="number" value="65000" class="input-field">
+            <button onclick="guardarConsulta()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-bold">Generar Factura Pendiente</button>
+            <button onclick="cerrarModal()" class="w-full p-2 text-slate-400 text-xs">Cancelar</button>
         </div>
     `;
 }
 
-// Modal functions
-function openModal(type) {
-    currentModal = type;
-    editingId = null;
-    document.getElementById('modal-title').textContent = 'Nuevo ' + capitalizeFirst(type);
-    generateFormFields(type);
-    document.getElementById('modal').classList.add('active');
-}
-
-function closeModal() {
-    document.getElementById('modal').classList.remove('active');
-    currentModal = null;
-    editingId = null;
-}
-
-function editItem(type, id) {
-    currentModal = type;
-    editingId = id;
-    const item = data[type].find(i => i.id === id);
-    document.getElementById('modal-title').textContent = 'Editar ' + capitalizeFirst(type);
-    generateFormFields(type, item);
-    document.getElementById('modal').classList.add('active');
-}
-
-function deleteItem(type, id) {
-    if (confirm('¿Estás seguro de que deseas eliminar este elemento?')) {
-        data[type] = data[type].filter(item => item.id !== id);
-        loadData(type);
-    }
-}
-
-// Form generation
-function generateFormFields(type, item = null) {
-    let fields = '';
+function guardarConsulta() {
+    const idPet = document.getElementById('f-pet').value;
+    const pet = DB.pacientes.find(x => x.id === idPet);
+    const idC = Math.random().toString(36).substr(2, 9);
+    const costo = parseInt(document.getElementById('f-cos').value);
     
-    if (type === 'duenos') {
-        fields = `
-            <div class="form-group">
-                <label class="form-label">Nombre completo *</label>
-                <input type="text" class="form-input" id="nombre" value="${item?.nombre || ''}" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Teléfono *</label>
-                <input type="tel" class="form-input" id="telefono" value="${item?.telefono || ''}" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Dirección</label>
-                <input type="text" class="form-input" id="direccion" value="${item?.direccion || ''}">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="email" value="${item?.email || ''}">
-            </div>
-        `;
-    } else if (type === 'veterinarios') {
-        fields = `
-            <div class="form-group">
-                <label class="form-label">Nombre completo *</label>
-                <input type="text" class="form-input" id="nombre" value="${item?.nombre || ''}" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Cédula profesional *</label>
-                <input type="text" class="form-input" id="cedula" value="${item?.cedula || ''}" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Especialidad</label>
-                <input type="text" class="form-input" id="especialidad" value="${item?.especialidad || ''}">
-            </div>
-        `;
-    } else if (type === 'mascotas') {
-        fields = `
-            <div class="form-group">
-                <label class="form-label">Nombre *</label>
-                <input type="text" class="form-input" id="nombre" value="${item?.nombre || ''}" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Especie *</label>
-                <input type="text" class="form-input" id="especie" value="${item?.especie || ''}" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Raza</label>
-                <input type="text" class="form-input" id="raza" value="${item?.raza || ''}">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Peso (kg)</label>
-                <input type="number" class="form-input" id="peso" value="${item?.peso || ''}" step="0.1">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Dueño *</label>
-                <select class="form-input" id="dueno_id" required>
-                    <option value="">Seleccionar dueño</option>
-                    ${data.duenos.map(d => `<option value="${d.id}" ${item?.dueno_id === d.id ? 'selected' : ''}>${d.nombre}</option>`).join('')}
-                </select>
-            </div>
-        `;
-    } else if (type === 'consultas') {
-        fields = `
-            <div class="form-group">
-                <label class="form-label">Fecha *</label>
-                <input type="date" class="form-input" id="fecha" value="${item?.fecha || ''}" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Mascota *</label>
-                <select class="form-input" id="mascota_id" required>
-                    <option value="">Seleccionar mascota</option>
-                    ${data.mascotas.map(m => `<option value="${m.id}" ${item?.mascota_id === m.id ? 'selected' : ''}>${m.nombre}</option>`).join('')}
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Veterinario *</label>
-                <select class="form-input" id="vet_id" required>
-                    <option value="">Seleccionar veterinario</option>
-                    ${data.veterinarios.map(v => `<option value="${v.id}" ${item?.vet_id === v.id ? 'selected' : ''}>${v.nombre}</option>`).join('')}
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Motivo *</label>
-                <input type="text" class="form-input" id="motivo" value="${item?.motivo || ''}" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Diagnóstico</label>
-                <input type="text" class="form-input" id="diagnostico" value="${item?.diagnostico || ''}">
-            </div>
-        `;
-    } else if (type === 'vacunas') {
-        fields = `
-            <div class="form-group">
-                <label class="form-label">Nombre *</label>
-                <input type="text" class="form-input" id="nombre" value="${item?.nombre || ''}" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Descripción</label>
-                <input type="text" class="form-input" id="descripcion" value="${item?.descripcion || ''}">
-            </div>
-        `;
-    }
-    
-    document.getElementById('form-fields').innerHTML = fields;
-}
-
-// Form submission
-function handleSubmit(event) {
-    event.preventDefault();
-    
-    const fields = document.querySelectorAll('.form-input');
-    const data_obj = {};
-    
-    fields.forEach(field => {
-        data_obj[field.id] = field.value;
+    DB.consultas.push({
+        id: idC, idMascota: idPet, fecha: new Date().toLocaleDateString(),
+        motivo: document.getElementById('f-mot').value, diag: "Nueva consulta generada.",
+        med: document.getElementById('f-med').value, costo: costo
     });
+    DB.facturas.push({ idConsulta: idC, emailDueno: pet.emailDueno, valor: costo, estado: "PENDIENTE" });
     
-    if (editingId) {
-        const index = data[currentModal].findIndex(i => i.id === editingId);
-        data[currentModal][index] = { ...data[currentModal][index], ...data_obj };
-    } else {
-        const newId = Math.max(...data[currentModal].map(i => i.id), 0) + 1;
-        data[currentModal].push({ id: newId, ...data_obj });
-    }
-    
-    loadData(currentModal);
-    closeModal();
+    localStorage.setItem('v_con', JSON.stringify(DB.consultas));
+    localStorage.setItem('v_fac', JSON.stringify(DB.facturas));
+    alert("Consulta guardada. Factura pendiente generada para " + pet.emailDueno);
+    cerrarModal();
+    navegar('Panel Médico');
 }
 
-// Utility functions
-function capitalizeFirst(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-// Initialize
-window.addEventListener('load', () => {
-    loadData('duenos');
-});
-
-// Close modal when clicking outside
-document.getElementById('modal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('modal')) {
-        closeModal();
-    }
-});
+function cerrarModal() { document.getElementById('modal-container').classList.add('hidden'); }
